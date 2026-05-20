@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2026-05-21
+  Changes:
+    - Linked Chest And Pipe: adds a dedicated visible technology node after Nullius Geology 1.
+    - Linked Chest And Pipe: hides the original internal Oem-linked-chest technology to avoid it being lost in the tree.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2026-05-21
   Changes:

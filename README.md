@@ -15,7 +15,8 @@ This mod combines the local fixes that were previously split across several smal
   - Adds loader unlocks to the matching `nullius-logistics-*` technologies.
   - Keeps beltboxes visible and reachable through `deadlock-stacking-*` technologies.
 - Linked Chest And Pipe:
-  - Makes `Oem-linked-chest` visible and enabled under Nullius.
+  - Adds a dedicated visible technology node after `nullius-geology-1`.
+  - Hides the original internal `Oem-linked-chest` technology.
   - Unlocks linked chest, huge linked chest, share network output, and linked pipe recipes.
   - Places the technology directly after `nullius-geology-1`.
   - Sets the technology to require only `nullius-geology-pack`.

@@ -9,6 +9,7 @@ local stats = {
 }
 
 local adjusted_stack_items = {}
+local linked_chest_tech_name = "sanchei-linked-chest-and-pipe"
 
 local function effects_of(tech)
     if not tech.effects then
@@ -329,11 +330,56 @@ local function fix_linked_chest_and_pipe()
         return
     end
 
-    local tech = data.raw.technology["Oem-linked-chest"]
+    local internal_tech = data.raw.technology["Oem-linked-chest"]
+    local linked_item = data.raw.item["Oem-linked-chest"]
+
+    if internal_tech then
+        internal_tech.hidden = true
+        internal_tech.enabled = false
+        internal_tech.effects = {}
+    end
+
+    local tech = data.raw.technology[linked_chest_tech_name]
+    if not tech then
+        local new_tech = {
+            type = "technology",
+            name = linked_chest_tech_name,
+            localised_name = { "technology-name.sanchei-linked-chest-and-pipe" },
+            localised_description = { "technology-description.sanchei-linked-chest-and-pipe" },
+            icon = "__base__/graphics/icons/linked-chest-icon.png",
+            icon_size = 64,
+            effects = {},
+            unit = {
+                count = 10,
+                ingredients = {
+                    { "nullius-geology-pack", 1 }
+                },
+                time = 10
+            },
+            prerequisites = { "nullius-geology-1" },
+            order = "nullius-bb-sanchei-linked-chest-and-pipe",
+            ignore_tech_cost_multiplier = true,
+            essential = true
+        }
+
+        if linked_item and linked_item.icons then
+            new_tech.icons = table.deepcopy(linked_item.icons)
+            new_tech.icon = nil
+            new_tech.icon_size = nil
+        elseif linked_item and linked_item.icon then
+            new_tech.icon = linked_item.icon
+            new_tech.icon_size = linked_item.icon_size or 64
+        end
+
+        data:extend({ new_tech })
+        tech = data.raw.technology[linked_chest_tech_name]
+    end
 
     if tech then
         tech.hidden = false
         tech.enabled = true
+        tech.localised_name = { "technology-name.sanchei-linked-chest-and-pipe" }
+        tech.localised_description = { "technology-description.sanchei-linked-chest-and-pipe" }
         tech.prerequisites = { "nullius-geology-1" }
         tech.unit = {
             count = 10,
@@ -342,6 +388,10 @@ local function fix_linked_chest_and_pipe()
             },
             time = 10
         }
+        tech.order = "nullius-bb-sanchei-linked-chest-and-pipe"
+        tech.ignore_tech_cost_multiplier = true
+        tech.essential = true
+        tech.effects = {}
         stats.techs_prepared = stats.techs_prepared + 1
     end
 
@@ -352,7 +402,7 @@ local function fix_linked_chest_and_pipe()
         "linked-pipe-input",
         "linked-pipe-output"
     }) do
-        add_unlock("Oem-linked-chest", recipe_name)
+        add_unlock(linked_chest_tech_name, recipe_name)
     end
 end
 
