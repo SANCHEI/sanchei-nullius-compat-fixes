@@ -1,0 +1,11 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026-05-21
+  Changes:
+    - Combined all local SANCHEI Nullius compatibility fixes into one mod.
+    - Entangled Belts: creates missing Nullius-compatible entangled underground belt recipes and unlocks them through nullius-logistics technologies.
+    - Entangled Belts: removes invalid unlock effects that point at recipes that do not exist.
+    - Deadlock Beltboxes & Loaders: removes invalid loader next_upgrade links when the upgrade target has no visible builder item.
+    - Deadlock Beltboxes & Loaders: exposes loaders and beltboxes through nullius-logistics technologies and reachable deadlock-stacking technologies.
+    - Linked Chest And Pipe: makes the linked chest technology visible, unlocks linked chest/pipe recipes, and requires only nullius-geology-pack with no prerequisites.
+    - WideChests Logistic: raises item stack sizes when an entity's placeable_by count is larger than the item's stack size.
