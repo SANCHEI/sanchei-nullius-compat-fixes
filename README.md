@@ -17,7 +17,8 @@ This mod combines the local fixes that were previously split across several smal
 - Linked Chest And Pipe:
   - Makes `Oem-linked-chest` visible and enabled under Nullius.
   - Unlocks linked chest, huge linked chest, share network output, and linked pipe recipes.
-  - Sets the technology to require only `nullius-geology-pack`, with no prerequisite technologies.
+  - Places the technology directly after `nullius-geology-1`.
+  - Sets the technology to require only `nullius-geology-pack`.
 - WideChests Logistic:
   - Fixes the prototype error where an entity can require more items to place than the source item's stack size.
   - Handles both `placeable_by` and `items_to_place_this`.

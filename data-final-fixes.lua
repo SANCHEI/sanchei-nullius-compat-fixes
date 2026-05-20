@@ -334,7 +334,7 @@ local function fix_linked_chest_and_pipe()
     if tech then
         tech.hidden = false
         tech.enabled = true
-        tech.prerequisites = nil
+        tech.prerequisites = { "nullius-geology-1" }
         tech.unit = {
             count = 10,
             ingredients = {
