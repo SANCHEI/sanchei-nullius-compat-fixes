@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.4
+Date: 2026-05-21
+  Changes:
+    - Linked Chest And Pipe: migrates non-recipe technology effects from the original Oem-linked-chest technology to the visible SANCHEI technology.
+    - Linked Chest And Pipe: migrates existing saves where Oem-linked-chest was already researched by marking the new technology researched.
+    - Linked Chest And Pipe: explicitly enables linked chest, huge linked chest, share network output, and linked pipe recipes in migrated saves.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.3
 Date: 2026-05-21
   Changes:

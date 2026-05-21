@@ -7,7 +7,8 @@ local stats = {
     loader_upgrades_removed = 0,
     stack_sizes_adjusted = 0,
     qol_techs_adjusted = 0,
-    qol_prerequisites_adjusted = 0
+    qol_prerequisites_adjusted = 0,
+    linked_effects_moved = 0
 }
 
 local adjusted_stack_items = {}
@@ -141,6 +142,22 @@ local function prepare_tech(tech_name, source_name, prerequisites, order_suffix,
 
     stats.techs_prepared = stats.techs_prepared + 1
     return tech
+end
+
+local function copy_non_recipe_effects(source)
+    local effects = {}
+
+    if not source or not source.effects then
+        return effects
+    end
+
+    for _, effect in pairs(source.effects) do
+        if effect.type ~= "unlock-recipe" then
+            effects[#effects + 1] = table.deepcopy(effect)
+        end
+    end
+
+    return effects
 end
 
 local function create_entangled_recipe(item_name)
@@ -334,6 +351,7 @@ local function fix_linked_chest_and_pipe()
 
     local internal_tech = data.raw.technology["Oem-linked-chest"]
     local linked_item = data.raw.item["Oem-linked-chest"]
+    local migrated_effects = copy_non_recipe_effects(internal_tech)
 
     if internal_tech then
         internal_tech.hidden = true
@@ -393,7 +411,8 @@ local function fix_linked_chest_and_pipe()
         tech.order = "nullius-bb-sanchei-linked-chest-and-pipe"
         tech.ignore_tech_cost_multiplier = true
         tech.essential = true
-        tech.effects = {}
+        tech.effects = migrated_effects
+        stats.linked_effects_moved = stats.linked_effects_moved + #migrated_effects
         stats.techs_prepared = stats.techs_prepared + 1
     end
 
@@ -614,4 +633,5 @@ log("sanchei-nullius-compat-fixes: created " .. stats.entangled_recipes ..
     " invalid loader upgrade(s), adjusted " .. stats.stack_sizes_adjusted ..
     " stack size(s), updated " .. stats.qol_techs_adjusted ..
     " qol research science cost(s), updated " .. stats.qol_prerequisites_adjusted ..
-    " qol research prerequisite set(s)")
+    " qol research prerequisite set(s), moved " .. stats.linked_effects_moved ..
+    " Linked Chest And Pipe non-recipe effect(s)")

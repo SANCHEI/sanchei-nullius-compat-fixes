@@ -19,6 +19,8 @@ This mod combines the local fixes that were previously split across several smal
 - Linked Chest And Pipe:
   - Adds a dedicated visible technology node after `nullius-geology-1`.
   - Hides the original internal `Oem-linked-chest` technology.
+  - Migrates existing saves that already researched the original `Oem-linked-chest` technology.
+  - Preserves non-recipe effects from the original technology, including optional player enhancement effects.
   - Unlocks linked chest, huge linked chest, share network output, and linked pipe recipes.
   - Places the technology directly after `nullius-geology-1`.
   - Sets the technology to require only `nullius-geology-pack`.
