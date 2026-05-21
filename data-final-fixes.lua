@@ -5,7 +5,9 @@ local stats = {
     research_unlocks_added = 0,
     techs_prepared = 0,
     loader_upgrades_removed = 0,
-    stack_sizes_adjusted = 0
+    stack_sizes_adjusted = 0,
+    qol_techs_adjusted = 0,
+    qol_prerequisites_adjusted = 0
 }
 
 local adjusted_stack_items = {}
@@ -465,12 +467,143 @@ local function fix_widechests_stack_sizes()
     end
 end
 
+local nullius_science_by_vanilla_pack = {
+    ["automation-science-pack"] = "nullius-geology-pack",
+    ["logistic-science-pack"] = "nullius-climatology-pack",
+    ["chemical-science-pack"] = "nullius-mechanical-pack",
+    ["production-science-pack"] = "nullius-electrical-pack",
+    ["utility-science-pack"] = "nullius-chemical-pack",
+    ["space-science-pack"] = "nullius-physics-pack",
+    ["military-science-pack"] = "nullius-astronomy-pack"
+}
+
+local nullius_prerequisite_by_vanilla_pack = {
+    ["automation-science-pack"] = "nullius-geology-1",
+    ["logistic-science-pack"] = "nullius-climatology-1",
+    ["chemical-science-pack"] = "nullius-mechanical-engineering-1",
+    ["production-science-pack"] = "nullius-electrical-engineering",
+    ["utility-science-pack"] = "nullius-experimental-chemistry",
+    ["space-science-pack"] = "nullius-physics",
+    ["military-science-pack"] = "nullius-astronomy"
+}
+
+local function ingredient_name(ingredient)
+    if type(ingredient) ~= "table" then
+        return nil
+    end
+
+    return ingredient.name or ingredient[1]
+end
+
+local function ingredient_amount(ingredient)
+    if type(ingredient) ~= "table" then
+        return 1
+    end
+
+    return ingredient.amount or ingredient[2] or 1
+end
+
+local function make_science_ingredient(name, amount)
+    return { name, amount or 1 }
+end
+
+local function replace_qol_science_ingredients(technology)
+    if not technology.unit or type(technology.unit.ingredients) ~= "table" then
+        return false
+    end
+
+    local changed = false
+    local merged = {}
+    local new_ingredients = {}
+
+    for _, ingredient in pairs(technology.unit.ingredients) do
+        local original_name = ingredient_name(ingredient)
+        local replacement_name = nullius_science_by_vanilla_pack[original_name]
+
+        if replacement_name and data.raw.tool[replacement_name] then
+            local amount = ingredient_amount(ingredient)
+            local existing_index = merged[replacement_name]
+
+            if existing_index then
+                new_ingredients[existing_index][2] = new_ingredients[existing_index][2] + amount
+            else
+                new_ingredients[#new_ingredients + 1] = make_science_ingredient(replacement_name, amount)
+                merged[replacement_name] = #new_ingredients
+            end
+
+            changed = true
+        else
+            new_ingredients[#new_ingredients + 1] = ingredient
+        end
+    end
+
+    if changed then
+        technology.unit.ingredients = new_ingredients
+        technology.check_science_packs_incompatibilities = false
+    end
+
+    return changed
+end
+
+local function replace_qol_science_prerequisites(technology)
+    if type(technology.prerequisites) ~= "table" then
+        return false
+    end
+
+    local changed = false
+    local seen = {}
+    local prerequisites = {}
+
+    for _, prerequisite in pairs(technology.prerequisites) do
+        local replacement = nullius_prerequisite_by_vanilla_pack[prerequisite]
+        local next_prerequisite = prerequisite
+
+        if replacement and data.raw.technology[replacement] then
+            next_prerequisite = replacement
+            changed = true
+        end
+
+        if next_prerequisite and not seen[next_prerequisite] then
+            prerequisites[#prerequisites + 1] = next_prerequisite
+            seen[next_prerequisite] = true
+        end
+    end
+
+    if changed then
+        technology.prerequisites = prerequisites
+    end
+
+    return changed
+end
+
+local function fix_qol_research_nullius_science()
+    if not mods["qol_research"] or not mods["nullius"] then
+        return
+    end
+
+    for technology_name, technology in pairs(data.raw.technology or {}) do
+        if technology_name:match("^qol%-") then
+            local ingredients_changed = replace_qol_science_ingredients(technology)
+            local prerequisites_changed = replace_qol_science_prerequisites(technology)
+
+            if ingredients_changed then
+                stats.qol_techs_adjusted = stats.qol_techs_adjusted + 1
+            end
+
+            if prerequisites_changed then
+                stats.qol_prerequisites_adjusted = stats.qol_prerequisites_adjusted + 1
+            end
+        end
+    end
+end
+
 fix_entangled_nullius_research()
 clean_entangled_unlocks()
 fix_deadlock_loader_upgrades()
 fix_deadlock_nullius_research()
 fix_linked_chest_and_pipe()
 fix_widechests_stack_sizes()
+fix_qol_research_nullius_science()
 
 log("sanchei-nullius-compat-fixes: created " .. stats.entangled_recipes ..
     " Entangled recipe(s), removed " .. stats.missing_unlocks_removed ..
@@ -479,4 +612,6 @@ log("sanchei-nullius-compat-fixes: created " .. stats.entangled_recipes ..
     " research unlock(s), prepared " .. stats.techs_prepared ..
     " tech link(s), removed " .. stats.loader_upgrades_removed ..
     " invalid loader upgrade(s), adjusted " .. stats.stack_sizes_adjusted ..
-    " stack size(s)")
+    " stack size(s), updated " .. stats.qol_techs_adjusted ..
+    " qol research science cost(s), updated " .. stats.qol_prerequisites_adjusted ..
+    " qol research prerequisite set(s)")

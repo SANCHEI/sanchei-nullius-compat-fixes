@@ -1,5 +1,7 @@
 # SANCHEI Nullius Compat Fixes
 
+![SANCHEI Nullius Compat Fixes logo](thumbnail.png)
+
 Compatibility bundle for the SANCHEI Nullius Factorio mod set.
 
 This mod combines the local fixes that were previously split across several small patch mods.
@@ -23,6 +25,9 @@ This mod combines the local fixes that were previously split across several smal
 - WideChests Logistic:
   - Fixes the prototype error where an entity can require more items to place than the source item's stack size.
   - Handles both `placeable_by` and `items_to_place_this`.
+- Quality of Life Research:
+  - Replaces vanilla science pack costs with Nullius science packs.
+  - Replaces hidden vanilla science pack prerequisites with the matching Nullius research technologies.
 
 ## Installation
 
