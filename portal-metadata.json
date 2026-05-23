@@ -1,0 +1,8 @@
+{
+  "mod": "sanchei-nullius-compat-fixes",
+  "title": "Nullius Compat Fixes",
+  "summary": "Compatibility fixes for a Nullius mod set: Entangled Belts, Linked Chest And Pipe, Loaders Modernized, WideChests Logistic, and Quality of Life Research.",
+  "category": "tweaks",
+  "license": "default_mit",
+  "description_file": "portal-description.md"
+}

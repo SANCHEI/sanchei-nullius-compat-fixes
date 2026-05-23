@@ -1,8 +1,8 @@
-# SANCHEI Nullius Compat Fixes
+# Nullius Compat Fixes
 
-![SANCHEI Nullius Compat Fixes logo](thumbnail.png)
+![Nullius Compat Fixes logo](thumbnail.png)
 
-Compatibility bundle for the SANCHEI Nullius Factorio mod set.
+Compatibility bundle for a Nullius Factorio mod set.
 
 This mod combines the local fixes that were previously split across several small patch mods.
 

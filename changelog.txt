@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.8
+Date: 2026-05-23
+  Changes:
+    - Removes branding references from public metadata, descriptions, and changelog text.
+    - Adds a dedicated mod portal description file.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.7
 Date: 2026-05-23
   Changes:
@@ -24,7 +31,7 @@ Date: 2026-05-23
 Version: 0.1.4
 Date: 2026-05-21
   Changes:
-    - Linked Chest And Pipe: migrates non-recipe technology effects from the original Oem-linked-chest technology to the visible SANCHEI technology.
+    - Linked Chest And Pipe: migrates non-recipe technology effects from the original Oem-linked-chest technology to the visible compatibility technology.
     - Linked Chest And Pipe: migrates existing saves where Oem-linked-chest was already researched by marking the new technology researched.
     - Linked Chest And Pipe: explicitly enables linked chest, huge linked chest, share network output, and linked pipe recipes in migrated saves.
 
@@ -53,7 +60,7 @@ Date: 2026-05-21
 Version: 0.1.0
 Date: 2026-05-21
   Changes:
-    - Combined all local SANCHEI Nullius compatibility fixes into one mod.
+    - Combined all local Nullius compatibility fixes into one mod.
     - Entangled Belts: creates missing Nullius-compatible entangled underground belt recipes and unlocks them through nullius-logistics technologies.
     - Entangled Belts: removes invalid unlock effects that point at recipes that do not exist.
     - Deadlock Beltboxes & Loaders: removes invalid loader next_upgrade links when the upgrade target has no visible builder item.
