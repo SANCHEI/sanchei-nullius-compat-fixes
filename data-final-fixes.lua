@@ -4,14 +4,14 @@ local stats = {
     entangled_unlocks_added = 0,
     research_unlocks_added = 0,
     techs_prepared = 0,
-    loader_upgrades_removed = 0,
     stack_sizes_adjusted = 0,
     qol_techs_adjusted = 0,
     qol_prerequisites_adjusted = 0,
     linked_effects_moved = 0,
     linked_recipes_adjusted = 0,
     loaders_modernized_unlocks_added = 0,
-    loaders_modernized_recipes_adjusted = 0
+    loaders_modernized_recipes_adjusted = 0,
+    loaders_modernized_groups_adjusted = 0
 }
 
 local adjusted_stack_items = {}
@@ -114,37 +114,6 @@ local function add_unlock(tech_name, recipe_name)
     end
 
     return true
-end
-
-local function copy_unit_from(tech, source_name, multiplier)
-    local source = data.raw.technology[source_name]
-    if source and source.unit then
-        tech.unit = table.deepcopy(source.unit)
-        if multiplier and tech.unit.count then
-            tech.unit.count = math.max(1, math.ceil(tech.unit.count * multiplier))
-        end
-    end
-end
-
-local function prepare_tech(tech_name, source_name, prerequisites, order_suffix, unit_multiplier)
-    local tech = data.raw.technology[tech_name]
-    if not tech then
-        return nil
-    end
-
-    tech.hidden = false
-    tech.enabled = true
-    tech.prerequisites = prerequisites
-
-    copy_unit_from(tech, source_name, unit_multiplier)
-
-    local source = data.raw.technology[source_name]
-    if source and source.order then
-        tech.order = source.order .. (order_suffix or "")
-    end
-
-    stats.techs_prepared = stats.techs_prepared + 1
-    return tech
 end
 
 local function copy_non_recipe_effects(source)
@@ -386,88 +355,6 @@ local function clean_entangled_unlocks()
     end
 end
 
-local function has_visible_builder_item(entity_name)
-    for _, item in pairs(data.raw.item or {}) do
-        if item.place_result == entity_name and not item.hidden then
-            return true
-        end
-    end
-
-    return false
-end
-
-local function fix_loader_next_upgrade(entity_type)
-    for _, entity in pairs(data.raw[entity_type] or {}) do
-        local target_name = entity.next_upgrade
-        if target_name then
-            local target = data.raw[entity_type] and data.raw[entity_type][target_name]
-            if not target or not has_visible_builder_item(target_name) then
-                entity.next_upgrade = nil
-                stats.loader_upgrades_removed = stats.loader_upgrades_removed + 1
-            end
-        end
-    end
-end
-
-local function fix_deadlock_loader_upgrades()
-    fix_loader_next_upgrade("loader")
-    fix_loader_next_upgrade("loader-1x1")
-    fix_loader_next_upgrade("loader-1x2")
-end
-
-local function fix_deadlock_nullius_research()
-    if not mods["deadlock-beltboxes-loaders"] or not mods["nullius"] then
-        return
-    end
-
-    local tiers = {
-        {
-            nullius_tech = "nullius-logistics-1",
-            deadlock_tech = "deadlock-stacking-1",
-            recipes = { "transport-belt-loader", "transport-belt-beltbox" }
-        },
-        {
-            nullius_tech = "nullius-logistics-2",
-            deadlock_tech = "deadlock-stacking-2",
-            recipes = { "fast-transport-belt-loader", "fast-transport-belt-beltbox" }
-        },
-        {
-            nullius_tech = "nullius-logistics-3",
-            deadlock_tech = "deadlock-stacking-3",
-            recipes = { "express-transport-belt-loader", "express-transport-belt-beltbox" }
-        },
-        {
-            nullius_tech = "nullius-logistics-4",
-            deadlock_tech = "deadlock-stacking-4",
-            recipes = {
-                "turbo-transport-belt-loader",
-                "turbo-transport-belt-beltbox",
-                "bob-ultimate-transport-belt-loader",
-                "bob-ultimate-transport-belt-beltbox"
-            }
-        }
-    }
-
-    for _, tier in pairs(tiers) do
-        local stacking_tech = prepare_tech(
-            tier.deadlock_tech,
-            tier.nullius_tech,
-            { tier.nullius_tech },
-            "-deadlock",
-            1.5
-        )
-
-        for _, recipe_name in pairs(tier.recipes) do
-            if data.raw.recipe[recipe_name] then
-                add_unlock(tier.nullius_tech, recipe_name)
-                if stacking_tech and recipe_name:find("beltbox", 1, true) then
-                    add_unlock(tier.deadlock_tech, recipe_name)
-                end
-            end
-        end
-    end
-end
-
 local loaders_modernized_by_nullius_tech = {
     {
         tech = "nullius-logistics-1",
@@ -510,12 +397,43 @@ local function fix_loaders_modernized_nullius_recipes()
     end
 end
 
+local function fix_loaders_modernized_logistics_group()
+    local subgroup_name = "belt"
+
+    for _, recipe_name in pairs({
+        "mdrn-chute-loader",
+        "mdrn-loader",
+        "mdrn-fast-loader",
+        "mdrn-express-loader",
+        "mdrn-turbo-loader",
+        "mdrn-stack-loader"
+    }) do
+        local recipe = data.raw.recipe[recipe_name]
+        if recipe then
+            recipe.subgroup = subgroup_name
+            recipe.order = "nullius-cb[mdrn-loader]-" .. recipe_name
+            data:extend({ recipe })
+            stats.loaders_modernized_groups_adjusted = stats.loaders_modernized_groups_adjusted + 1
+        end
+
+        local item = data.raw.item[recipe_name]
+        if item then
+            item.group = "logistics"
+            item.subgroup = subgroup_name
+            item.order = "nullius-cb[mdrn-loader]-" .. recipe_name
+            data:extend({ item })
+            stats.loaders_modernized_groups_adjusted = stats.loaders_modernized_groups_adjusted + 1
+        end
+    end
+end
+
 local function fix_loaders_modernized_nullius_research()
     if not mods["loaders-modernized"] or not mods["nullius"] then
         return
     end
 
     fix_loaders_modernized_nullius_recipes()
+    fix_loaders_modernized_logistics_group()
 
     for _, tier in pairs(loaders_modernized_by_nullius_tech) do
         local tech = data.raw.technology[tier.tech]
@@ -530,6 +448,8 @@ local function fix_loaders_modernized_nullius_research()
             end
         end
     end
+
+    fix_loaders_modernized_logistics_group()
 end
 
 local function fix_linked_chest_and_pipe()
@@ -808,8 +728,6 @@ end
 
 fix_entangled_nullius_research()
 clean_entangled_unlocks()
-fix_deadlock_loader_upgrades()
-fix_deadlock_nullius_research()
 fix_loaders_modernized_nullius_research()
 fix_linked_chest_and_pipe()
 fix_widechests_stack_sizes()
@@ -820,12 +738,12 @@ log("sanchei-nullius-compat-fixes: created " .. stats.entangled_recipes ..
     " missing unlock(s), added " .. stats.entangled_unlocks_added ..
     " generic Entangled unlock(s), added " .. stats.research_unlocks_added ..
     " research unlock(s), prepared " .. stats.techs_prepared ..
-    " tech link(s), removed " .. stats.loader_upgrades_removed ..
-    " invalid loader upgrade(s), adjusted " .. stats.stack_sizes_adjusted ..
+    " tech link(s), adjusted " .. stats.stack_sizes_adjusted ..
     " stack size(s), updated " .. stats.qol_techs_adjusted ..
     " qol research science cost(s), updated " .. stats.qol_prerequisites_adjusted ..
     " qol research prerequisite set(s), moved " .. stats.linked_effects_moved ..
     " Linked Chest And Pipe non-recipe effect(s), adjusted " .. stats.linked_recipes_adjusted ..
     " Linked Chest And Pipe recipe(s), added " .. stats.loaders_modernized_unlocks_added ..
     " Loaders Modernized unlock(s), adjusted " .. stats.loaders_modernized_recipes_adjusted ..
-    " Loaders Modernized recipe(s)")
+    " Loaders Modernized recipe(s), moved " .. stats.loaders_modernized_groups_adjusted ..
+    " Loaders Modernized prototype(s) to logistics")

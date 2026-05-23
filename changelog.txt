@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.7
+Date: 2026-05-23
+  Changes:
+    - Removes the Deadlock Beltboxes & Loaders compatibility fixes from this bundle.
+    - Loaders Modernized: keeps loader items in the logistics group.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.6
 Date: 2026-05-23
   Changes:
