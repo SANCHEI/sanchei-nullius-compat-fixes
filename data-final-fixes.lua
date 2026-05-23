@@ -8,7 +8,9 @@ local stats = {
     stack_sizes_adjusted = 0,
     qol_techs_adjusted = 0,
     qol_prerequisites_adjusted = 0,
-    linked_effects_moved = 0
+    linked_effects_moved = 0,
+    linked_recipes_adjusted = 0,
+    loaders_modernized_unlocks_added = 0
 }
 
 local adjusted_stack_items = {}
@@ -158,6 +160,119 @@ local function copy_non_recipe_effects(source)
     end
 
     return effects
+end
+
+local function recipe_ingredient_key(ingredient)
+    if type(ingredient) ~= "table" then
+        return nil
+    end
+
+    return ingredient.name or ingredient[1]
+end
+
+local function replace_recipe_ingredient_name(ingredient, name)
+    local replacement = table.deepcopy(ingredient)
+
+    if replacement.name then
+        replacement.name = name
+    else
+        replacement[1] = name
+    end
+
+    return replacement
+end
+
+local nullius_linked_recipe_replacements = {
+    ["iron-plate"] = "nullius-iron-sheet",
+    ["steel-plate"] = "nullius-steel-sheet"
+}
+
+local function sanitize_linked_recipe_for_nullius(recipe_name)
+    local recipe = data.raw.recipe[recipe_name]
+    if not recipe or type(recipe.ingredients) ~= "table" then
+        return false
+    end
+
+    local changed = false
+    local ingredients = {}
+
+    for _, ingredient in pairs(recipe.ingredients) do
+        local name = recipe_ingredient_key(ingredient)
+
+        if name == "copper-plate" then
+            changed = true
+        else
+            local replacement = nullius_linked_recipe_replacements[name]
+            if replacement and data.raw.item[replacement] then
+                ingredients[#ingredients + 1] = replace_recipe_ingredient_name(ingredient, replacement)
+                changed = true
+            else
+                ingredients[#ingredients + 1] = ingredient
+            end
+        end
+    end
+
+    if changed then
+        recipe.ingredients = ingredients
+    end
+
+    return changed
+end
+
+local function copy_recipe_crafting_requirements(recipe_name, source_recipe_name)
+    local recipe = data.raw.recipe[recipe_name]
+    local source_recipe = data.raw.recipe[source_recipe_name]
+
+    if not recipe or not source_recipe or type(source_recipe.ingredients) ~= "table" then
+        return false
+    end
+
+    recipe.ingredients = table.deepcopy(source_recipe.ingredients)
+    recipe.category = source_recipe.category or recipe.category
+    recipe.allow_as_intermediate = true
+    recipe.allow_decomposition = true
+
+    return true
+end
+
+local function fix_linked_chest_nullius_recipes()
+    local changed_recipes = {}
+
+    local source_recipes = {
+        ["Oem-linked-chest"] = "wooden-chest",
+        ["share-network-output"] = "constant-combinator",
+        ["linked-pipe-input"] = "pipe-to-ground",
+        ["linked-pipe-output"] = "pipe-to-ground"
+    }
+
+    for recipe_name, source_recipe_name in pairs(source_recipes) do
+        if copy_recipe_crafting_requirements(recipe_name, source_recipe_name) then
+            changed_recipes[recipe_name] = true
+        end
+    end
+
+    local huge_recipe = data.raw.recipe["Huge-linked-chest"]
+    if huge_recipe then
+        huge_recipe.category = huge_recipe.category or
+            (data.raw.recipe["wooden-chest"] and data.raw.recipe["wooden-chest"].category) or
+            "medium-crafting"
+    end
+
+    for _, recipe_name in pairs({
+        "Oem-linked-chest",
+        "Huge-linked-chest",
+        "share-network-output",
+        "linked-pipe-input",
+        "linked-pipe-output"
+    }) do
+        if sanitize_linked_recipe_for_nullius(recipe_name) then
+            changed_recipes[recipe_name] = true
+        end
+    end
+
+    for _ in pairs(changed_recipes) do
+        stats.linked_recipes_adjusted = stats.linked_recipes_adjusted + 1
+    end
 end
 
 local function create_entangled_recipe(item_name)
@@ -344,10 +459,51 @@ local function fix_deadlock_nullius_research()
     end
 end
 
+local loaders_modernized_by_nullius_tech = {
+    {
+        tech = "nullius-logistics-1",
+        recipes = { "mdrn-loader" }
+    },
+    {
+        tech = "nullius-logistics-2",
+        recipes = { "mdrn-fast-loader" }
+    },
+    {
+        tech = "nullius-logistics-3",
+        recipes = { "mdrn-express-loader" }
+    },
+    {
+        tech = "nullius-logistics-4",
+        recipes = { "mdrn-turbo-loader", "mdrn-stack-loader" }
+    }
+}
+
+local function fix_loaders_modernized_nullius_research()
+    if not mods["loaders-modernized"] or not mods["nullius"] then
+        return
+    end
+
+    for _, tier in pairs(loaders_modernized_by_nullius_tech) do
+        local tech = data.raw.technology[tier.tech]
+
+        for _, recipe_name in pairs(tier.recipes) do
+            if data.raw.recipe[recipe_name] then
+                local had_unlock = tech and has_unlock(tech, recipe_name)
+
+                if add_unlock(tier.tech, recipe_name) and not had_unlock then
+                    stats.loaders_modernized_unlocks_added = stats.loaders_modernized_unlocks_added + 1
+                end
+            end
+        end
+    end
+end
+
 local function fix_linked_chest_and_pipe()
     if not mods["LinkedChestAndPipe"] or not mods["nullius"] then
         return
     end
+
+    fix_linked_chest_nullius_recipes()
 
     local internal_tech = data.raw.technology["Oem-linked-chest"]
     local linked_item = data.raw.item["Oem-linked-chest"]
@@ -620,6 +776,7 @@ fix_entangled_nullius_research()
 clean_entangled_unlocks()
 fix_deadlock_loader_upgrades()
 fix_deadlock_nullius_research()
+fix_loaders_modernized_nullius_research()
 fix_linked_chest_and_pipe()
 fix_widechests_stack_sizes()
 fix_qol_research_nullius_science()
@@ -634,4 +791,6 @@ log("sanchei-nullius-compat-fixes: created " .. stats.entangled_recipes ..
     " stack size(s), updated " .. stats.qol_techs_adjusted ..
     " qol research science cost(s), updated " .. stats.qol_prerequisites_adjusted ..
     " qol research prerequisite set(s), moved " .. stats.linked_effects_moved ..
-    " Linked Chest And Pipe non-recipe effect(s)")
+    " Linked Chest And Pipe non-recipe effect(s), adjusted " .. stats.linked_recipes_adjusted ..
+    " Linked Chest And Pipe recipe(s), added " .. stats.loaders_modernized_unlocks_added ..
+    " Loaders Modernized unlock(s)")

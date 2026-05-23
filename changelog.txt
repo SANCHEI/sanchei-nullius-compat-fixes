@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.5
+Date: 2026-05-23
+  Changes:
+    - Linked Chest And Pipe: replaces vanilla plate ingredients with Nullius materials and removes copper plate from linked chest recipes.
+    - Linked Chest And Pipe: uses Nullius-compatible pipe-to-ground ingredients for linked pipe recipes.
+    - Loaders Modernized: unlocks loader tiers through nullius-logistics technologies and migrates already researched saves.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.4
 Date: 2026-05-21
   Changes:

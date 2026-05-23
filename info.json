@@ -1,6 +1,6 @@
 {
   "name": "sanchei-nullius-compat-fixes",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "title": "SANCHEI Nullius Compat Fixes",
   "author": "SANCHEI",
   "factorio_version": "2.0",
@@ -17,5 +17,5 @@
     "? loaders-modernized",
     "? squeak-through-2"
   ],
-  "description": "A local compatibility bundle for the SANCHEI Nullius mod set. It fixes Entangled Belts research and missing unlocks, Deadlock loader upgrade links and Nullius research unlocks, Linked Chest And Pipe Nullius research requirements and runtime migration, WideChests logistic stack-size prototype errors, and Quality of Life Research science packs."
+  "description": "A local compatibility bundle for the SANCHEI Nullius mod set. It fixes Entangled Belts research and missing unlocks, Deadlock loader upgrade links and Nullius research unlocks, Loaders Modernized Nullius logistics unlocks, Linked Chest And Pipe Nullius research/recipes/runtime migration, WideChests logistic stack-size prototype errors, and Quality of Life Research science packs."
 }

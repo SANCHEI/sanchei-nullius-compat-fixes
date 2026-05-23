@@ -22,8 +22,14 @@ This mod combines the local fixes that were previously split across several smal
   - Migrates existing saves that already researched the original `Oem-linked-chest` technology.
   - Preserves non-recipe effects from the original technology, including optional player enhancement effects.
   - Unlocks linked chest, huge linked chest, share network output, and linked pipe recipes.
+  - Replaces vanilla plate ingredients with Nullius materials and removes `copper-plate` from linked chest recipes.
+  - Replaces linked pipe crafting with Nullius pipe-to-ground ingredients.
   - Places the technology directly after `nullius-geology-1`.
   - Sets the technology to require only `nullius-geology-pack`.
+- Loaders Modernized:
+  - Adds `mdrn-loader`, `mdrn-fast-loader`, and `mdrn-express-loader` to `nullius-logistics-1` through `nullius-logistics-3`.
+  - Adds optional higher loader tiers to `nullius-logistics-4` when those recipes exist.
+  - Enables loader recipes in existing saves when the matching Nullius logistics technology was already researched.
 - WideChests Logistic:
   - Fixes the prototype error where an entity can require more items to place than the source item's stack size.
   - Handles both `placeable_by` and `items_to_place_this`.
