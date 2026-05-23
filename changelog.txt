@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.6
+Date: 2026-05-23
+  Changes:
+    - Loaders Modernized: replaces hidden vanilla steel plate in the first loader recipe with Nullius steel sheet.
+    - Loaders Modernized: replaces hidden vanilla fast inserter in the fast loader recipe with the visible Nullius-compatible turbo inserter.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.5
 Date: 2026-05-23
   Changes:

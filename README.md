@@ -29,6 +29,7 @@ This mod combines the local fixes that were previously split across several smal
 - Loaders Modernized:
   - Adds `mdrn-loader`, `mdrn-fast-loader`, and `mdrn-express-loader` to `nullius-logistics-1` through `nullius-logistics-3`.
   - Adds optional higher loader tiers to `nullius-logistics-4` when those recipes exist.
+  - Replaces hidden vanilla loader ingredients with Nullius-compatible materials and inserters.
   - Enables loader recipes in existing saves when the matching Nullius logistics technology was already researched.
 - WideChests Logistic:
   - Fixes the prototype error where an entity can require more items to place than the source item's stack size.

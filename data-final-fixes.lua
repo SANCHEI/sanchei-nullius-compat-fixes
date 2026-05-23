@@ -10,7 +10,8 @@ local stats = {
     qol_prerequisites_adjusted = 0,
     linked_effects_moved = 0,
     linked_recipes_adjusted = 0,
-    loaders_modernized_unlocks_added = 0
+    loaders_modernized_unlocks_added = 0,
+    loaders_modernized_recipes_adjusted = 0
 }
 
 local adjusted_stack_items = {}
@@ -187,7 +188,7 @@ local nullius_linked_recipe_replacements = {
     ["steel-plate"] = "nullius-steel-sheet"
 }
 
-local function sanitize_linked_recipe_for_nullius(recipe_name)
+local function sanitize_recipe_ingredients(recipe_name, replacements, removals)
     local recipe = data.raw.recipe[recipe_name]
     if not recipe or type(recipe.ingredients) ~= "table" then
         return false
@@ -199,10 +200,10 @@ local function sanitize_linked_recipe_for_nullius(recipe_name)
     for _, ingredient in pairs(recipe.ingredients) do
         local name = recipe_ingredient_key(ingredient)
 
-        if name == "copper-plate" then
+        if removals and removals[name] then
             changed = true
         else
-            local replacement = nullius_linked_recipe_replacements[name]
+            local replacement = replacements and replacements[name]
             if replacement and data.raw.item[replacement] then
                 ingredients[#ingredients + 1] = replace_recipe_ingredient_name(ingredient, replacement)
                 changed = true
@@ -217,6 +218,14 @@ local function sanitize_linked_recipe_for_nullius(recipe_name)
     end
 
     return changed
+end
+
+local function sanitize_linked_recipe_for_nullius(recipe_name)
+    return sanitize_recipe_ingredients(
+        recipe_name,
+        nullius_linked_recipe_replacements,
+        { ["copper-plate"] = true }
+    )
 end
 
 local function copy_recipe_crafting_requirements(recipe_name, source_recipe_name)
@@ -478,10 +487,35 @@ local loaders_modernized_by_nullius_tech = {
     }
 }
 
+local loaders_modernized_nullius_replacements = {
+    ["iron-plate"] = "nullius-iron-sheet",
+    ["steel-plate"] = "nullius-steel-sheet",
+    ["fast-inserter"] = "bob-turbo-inserter"
+}
+
+local function fix_loaders_modernized_nullius_recipes()
+    local recipe_names = {
+        "mdrn-chute-loader",
+        "mdrn-loader",
+        "mdrn-fast-loader",
+        "mdrn-express-loader",
+        "mdrn-turbo-loader",
+        "mdrn-stack-loader"
+    }
+
+    for _, recipe_name in pairs(recipe_names) do
+        if sanitize_recipe_ingredients(recipe_name, loaders_modernized_nullius_replacements) then
+            stats.loaders_modernized_recipes_adjusted = stats.loaders_modernized_recipes_adjusted + 1
+        end
+    end
+end
+
 local function fix_loaders_modernized_nullius_research()
     if not mods["loaders-modernized"] or not mods["nullius"] then
         return
     end
+
+    fix_loaders_modernized_nullius_recipes()
 
     for _, tier in pairs(loaders_modernized_by_nullius_tech) do
         local tech = data.raw.technology[tier.tech]
@@ -793,4 +827,5 @@ log("sanchei-nullius-compat-fixes: created " .. stats.entangled_recipes ..
     " qol research prerequisite set(s), moved " .. stats.linked_effects_moved ..
     " Linked Chest And Pipe non-recipe effect(s), adjusted " .. stats.linked_recipes_adjusted ..
     " Linked Chest And Pipe recipe(s), added " .. stats.loaders_modernized_unlocks_added ..
-    " Loaders Modernized unlock(s)")
+    " Loaders Modernized unlock(s), adjusted " .. stats.loaders_modernized_recipes_adjusted ..
+    " Loaders Modernized recipe(s)")
